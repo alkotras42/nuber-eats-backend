@@ -8,6 +8,7 @@ import { CoreEntity } from 'src/common/entities/core.entity';
 import { BeforeInsert, Column, Entity } from 'typeorm';
 import * as bcrypt from 'bcrypt'
 import { InternalServerErrorException } from '@nestjs/common';
+import { IsEmail, IsEnum, IsString, Length } from 'class-validator';
 
 enum UserRole {
   Client,
@@ -24,14 +25,18 @@ registerEnumType(UserRole, { name: 'UserRole' });
 export class User extends CoreEntity {
   @Field((type) => String)
   @Column()
+  @IsEmail()
   email: string;
 
   @Field((type) => String)
   @Column()
+  @IsString()
+  @Length(3, 15)
   password: string;
 
   @Field((type) => UserRole)
   @Column({ type: 'enum', enum: UserRole })
+  @IsEnum(UserRole)
   role: UserRole;
 
   @BeforeInsert()
@@ -43,6 +48,16 @@ export class User extends CoreEntity {
     catch (e) {
       console.log(e)
       throw new InternalServerErrorException()
+    }
+  }
+
+  async checkPassword(aPassword: string): Promise<boolean> {
+    try{
+      return await bcrypt.compare(aPassword, this.password)
+    }catch(e){
+      console.log(e)
+      throw new InternalServerErrorException()
+
     }
   }
 }

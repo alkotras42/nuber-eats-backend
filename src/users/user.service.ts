@@ -50,4 +50,11 @@ export class UsersService {
       return [false, e.message];
     }
   }
+  async findUserById(id: number): Promise<User> {
+    const user = await this.users.findOne({ id });
+    if (!user) {
+      return null;
+    }
+    return user;
+  }
 }

@@ -6,11 +6,17 @@ import { LoginInput } from './dtos/login.dto';
 import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { EditProfileInput } from './dtos/edit-profile.dto';
+import { Verification } from './entities/verification.entity';
+import { runInThisContext } from 'vm';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly users: Repository<User>,
+    @InjectRepository(Verification)
+    private readonly verifications: Repository<Verification>,
+    private readonly mailService: MailService,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -24,7 +30,15 @@ export class UsersService {
       if (exist) {
         return [false, 'There is a user with that email already'];
       }
-      await this.users.save(this.users.create({ email, password, role }));
+      const user = await this.users.save(
+        this.users.create({ email, password, role }),
+      );
+      const verification = await this.verifications.save(
+        this.verifications.create({
+          user,
+        }),
+      );
+      this.mailService.sendVerificationEmail(user.email, verification.code);
       return [true];
     } catch (e) {
       // make error
@@ -37,7 +51,10 @@ export class UsersService {
     password,
   }: LoginInput): Promise<[boolean, string?, string?]> {
     try {
-      const user = await this.users.findOne({ email });
+      const user = await this.users.findOne(
+        { email },
+        { select: ['id', 'password'] },
+      );
       if (!user) {
         return [false, 'There is no user with this email'];
       }
@@ -66,10 +83,29 @@ export class UsersService {
     const user = await this.users.findOne(userId);
     if (email) {
       user.email = email;
+      user.isVerified = false;
+      const verification = await this.verifications.save(
+        this.verifications.create({ user }),
+      );
+      this.mailService.sendVerificationEmail(user.email, verification.code);
     }
     if (password) {
       user.password = password;
     }
     return this.users.save(user);
+  }
+
+  async verifyEmail(code: string): Promise<boolean> {
+    const verification = await this.verifications.findOne(
+      { code },
+      { relations: ['user'] },
+    );
+    if (verification) {
+      verification.user.isVerified = true;
+      await this.users.save(verification.user);
+      await this.verifications.delete(verification.id);
+      return true;
+    }
+    return false;
   }
 }

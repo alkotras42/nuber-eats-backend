@@ -29,7 +29,7 @@ describe('UserService', () => {
   let usersRepository: MockRepository<User>;
   let verificationRepository: MockRepository<Verification>;
   let mailService: MailService;
-  let jwtService: JwtService
+  let jwtService: JwtService;
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -57,7 +57,7 @@ describe('UserService', () => {
     usersRepository = module.get(getRepositoryToken(User));
     verificationRepository = module.get(getRepositoryToken(Verification));
     mailService = module.get<MailService>(MailService);
-    jwtService = module.get<JwtService>(JwtService)
+    jwtService = module.get<JwtService>(JwtService);
   });
 
   it('be defined', () => {
@@ -152,12 +152,29 @@ describe('UserService', () => {
       usersRepository.findOne.mockResolvedValue(mockedUser);
       const result = await service.Login(loginArgs);
       expect(jwtService.sign).toHaveBeenCalledTimes(1);
-      expect(jwtService.sign).toHaveBeenCalledWith(expect.any(Number))
+      expect(jwtService.sign).toHaveBeenCalledWith(expect.any(Number));
 
       expect(result).toEqual([true, '', mockJwtServise.sign()]);
     });
+
+    it('should fail on exception', async () => {
+      usersRepository.findOne.mockRejectedValue(new Error());
+      const result = await service.Login(loginArgs);
+      expect(result).toEqual([false, "Can't log user in"]);
+    });
   });
-  it.todo('findUserById');
+  describe('findUserById', () => {
+    it('should find an existing user', async () => {
+      usersRepository.findOne.mockResolvedValue({ id: 1 });
+      const result = await service.findUserById(1);
+      expect(result).toEqual({ id: 1 });
+    });
+    it('should return null if user not found', async () => {
+      usersRepository.findOne.mockResolvedValue(undefined);
+      const result = await service.findUserById(1);
+      expect(result).toEqual(null);
+    });
+  });
   it.todo('editProfile');
   it.todo('verifyEmail');
 });

@@ -65,7 +65,7 @@ export class UsersService {
       const token = this.jwtService.sign(user.id);
       return [true, '', token];
     } catch (e) {
-      return [false, e.message];
+      return [false, "Can't log user in"];
     }
   }
   async findUserById(id: number): Promise<User> {

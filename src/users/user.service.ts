@@ -83,9 +83,9 @@ export class UsersService {
     const user = await this.users.findOne(userId);
     if (email) {
       user.email = email;
-      user.isVerified = false;
+      user.verified = false;
       const verification = await this.verifications.save(
-        this.verifications.create({ user }),
+        this.verifications.create( {user} ),
       );
       this.mailService.sendVerificationEmail(user.email, verification.code);
     }
@@ -101,7 +101,7 @@ export class UsersService {
       { relations: ['user'] },
     );
     if (verification) {
-      verification.user.isVerified = true;
+      verification.user.verified = true;
       await this.users.save(verification.user);
       await this.verifications.delete(verification.id);
       return true;

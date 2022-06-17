@@ -13,14 +13,14 @@ const mockRepository = () => ({
   create: jest.fn(),
 });
 
-const mockJwtServise = {
+const mockJwtServise = () => ({
   sign: jest.fn(() => 'signe-token'),
   verify: jest.fn(),
-};
+});
 
-const mockMailService = {
+const mockMailService = () => ({
   sendVerificationEmail: jest.fn(),
-};
+});
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
@@ -45,11 +45,11 @@ describe('UserService', () => {
         },
         {
           provide: JwtService,
-          useValue: mockJwtServise,
+          useValue: mockJwtServise(),
         },
         {
           provide: MailService,
-          useValue: mockMailService,
+          useValue: mockMailService(),
         },
       ],
     }).compile();
@@ -154,7 +154,7 @@ describe('UserService', () => {
       expect(jwtService.sign).toHaveBeenCalledTimes(1);
       expect(jwtService.sign).toHaveBeenCalledWith(expect.any(Number));
 
-      expect(result).toEqual([true, '', mockJwtServise.sign()]);
+      expect(result).toEqual([true, '', mockJwtServise().sign()]);
     });
 
     it('should fail on exception', async () => {
@@ -175,6 +175,44 @@ describe('UserService', () => {
       expect(result).toEqual(null);
     });
   });
-  it.todo('editProfile');
+  describe('editProfile', () => {
+    it('should change email', async () => {
+      const oldUser = {
+        email: '123123',
+        verified: true,
+      };
+      const editProfileArg = {
+        userId: 1,
+        input: { email: '123123123' },
+      };
+      const newVerification = {
+        code: 'code',
+      };
+      usersRepository.findOne.mockResolvedValue(oldUser);
+      verificationRepository.create.mockReturnValue(newVerification);
+      verificationRepository.save.mockResolvedValue(newVerification);
+
+      await service.editProfile(editProfileArg.userId, editProfileArg.input);
+
+      expect(usersRepository.findOne).toHaveBeenCalledWith(
+        editProfileArg.userId,
+      );
+
+      expect(verificationRepository.create).toHaveBeenCalledWith({
+        user: {
+          verified: false,
+          email: editProfileArg.input.email,
+        },
+      });
+      expect(usersRepository.save).toHaveBeenCalledWith({
+        verified: false,
+        email: editProfileArg.input.email,
+      });
+      expect(mailService.sendVerificationEmail).toHaveBeenCalledWith(
+        editProfileArg.input.email,
+        newVerification.code,
+      );
+    });
+  });
   it.todo('verifyEmail');
 });

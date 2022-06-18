@@ -11,6 +11,7 @@ const mockRepository = () => ({
   findOne: jest.fn(),
   save: jest.fn(),
   create: jest.fn(),
+  delete: jest.fn(),
 });
 
 const mockJwtServise = () => ({
@@ -213,6 +214,51 @@ describe('UserService', () => {
         newVerification.code,
       );
     });
+
+    it('should change password', async () => {
+      const editProfileArg = {
+        userId: 1,
+        input: { password: 'newPass' },
+      };
+
+      usersRepository.findOne.mockResolvedValue({ password: 'old' });
+
+      await service.editProfile(editProfileArg.userId, editProfileArg.input);
+
+      expect(usersRepository.save).toHaveBeenCalledWith(editProfileArg.input);
+    });
   });
-  it.todo('verifyEmail');
+  describe('verifyEmail', () => {
+    it('should verify email', async () => {
+      const mockedVerification = {
+        user: {
+          verified: false,
+        },
+        id: 1,
+      };
+      verificationRepository.findOne.mockResolvedValue(mockedVerification);
+
+      const res = await service.verifyEmail('code');
+
+
+      expect(verificationRepository.findOne).toHaveBeenCalledWith(
+        expect.any(Object),
+        expect.any(Object),
+      );
+      expect(usersRepository.save).toHaveBeenCalledWith({ verified: true });
+
+      expect(verificationRepository.delete).toHaveBeenCalledWith(
+        mockedVerification.id,
+      );
+      expect(res).toBeTruthy();
+    });
+
+    it('should return false if user does not exist', async () => {
+      verificationRepository.findOne.mockResolvedValue(undefined)
+
+      const res = await service.verifyEmail('code')
+
+      expect(res).toBeFalsy()
+    })
+  });
 });

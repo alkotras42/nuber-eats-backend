@@ -240,7 +240,6 @@ describe('UserService', () => {
 
       const res = await service.verifyEmail('code');
 
-
       expect(verificationRepository.findOne).toHaveBeenCalledWith(
         expect.any(Object),
         expect.any(Object),
@@ -254,11 +253,11 @@ describe('UserService', () => {
     });
 
     it('should return false if user does not exist', async () => {
-      verificationRepository.findOne.mockResolvedValue(undefined)
+      verificationRepository.findOne.mockResolvedValue(undefined);
 
-      const res = await service.verifyEmail('code')
+      const res = await service.verifyEmail('code');
 
-      expect(res).toBeFalsy()
-    })
+      expect(res).toBeFalsy();
+    });
   });
 });

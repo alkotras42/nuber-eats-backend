@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EditProfileInput } from 'src/users/dtos/edit-profile.dto';
 import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import {
   createRestaurantInput,
   CreateRestaurantOutput,
@@ -117,6 +118,21 @@ export class RestaurantService {
       return {
         ok: true,
       };
+    } catch (e) {
+      return {
+        ok: false,
+        error: e.message,
+      };
+    }
+  }
+
+  async allCategories(): Promise<AllCategoriesOutput> {
+    try {
+      const categories = await this.categories.find();
+      return {
+        ok: true,
+        categories
+      }
     } catch (e) {
       return {
         ok: false,

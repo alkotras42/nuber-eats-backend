@@ -27,7 +27,7 @@ The Backend of Nuber Eats Clone
 - address
 - coverImage
 
-# Restaurant features
+### Restaurant features
 
 - Edit Restaurant
 - Delete Restaurant

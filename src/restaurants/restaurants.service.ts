@@ -131,13 +131,17 @@ export class RestaurantService {
       const categories = await this.categories.find();
       return {
         ok: true,
-        categories
-      }
+        categories,
+      };
     } catch (e) {
       return {
         ok: false,
         error: e.message,
       };
     }
+  }
+
+  countRestaurants(category: Category) {
+    return this.restaurants.count({ category });
   }
 }

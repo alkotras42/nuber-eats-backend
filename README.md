@@ -38,6 +38,7 @@ The Backend of Nuber Eats Clone
 - See Restaurants by category
 - See restaurants
 - See restaurant
+- Search restaurant
 - Create dish
 - Edit dish
 - Delete dish

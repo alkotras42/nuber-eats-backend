@@ -1,5 +1,12 @@
 import { SetMetadata } from '@nestjs/common';
-import { Args, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { EditProfileInput } from 'src/users/dtos/edit-profile.dto';
@@ -18,6 +25,7 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
 import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurants.entity';
 import { RestaurantService } from './restaurants.service';
@@ -58,26 +66,33 @@ export class RestaurantsResolver {
       deleteRestaurantInput,
     );
   }
+
+  @Query((returns) => RestaurantsOutput)
+  restaurants(
+    @Args('input') restaurantsInput: RestaurantsInput,
+  ): Promise<RestaurantsOutput> {
+    return this.restaurantService.allRestaurants(restaurantsInput);
+  }
 }
 
-
-@Resolver(of => Category)
+@Resolver((of) => Category)
 export class CategoryResolver {
   constructor(private readonly restaurantService: RestaurantService) {}
 
-  @ResolveField(type => Number)
+  @ResolveField((type) => Number)
   restaurantCount(@Parent() category: Category): Promise<number> {
-    return this.restaurantService.countRestaurants(category)
+    return this.restaurantService.countRestaurants(category);
   }
 
-  @Query(type => AllCategoriesOutput)
+  @Query((type) => AllCategoriesOutput)
   allCategories(): Promise<AllCategoriesOutput> {
     return this.restaurantService.allCategories();
   }
 
-  @Query(type => CategoryOutput)
-  category(@Args('input') categotyInput: CategoryInput): Promise<CategoryOutput> {
-    return this.restaurantService.findCategotyBySlug(categotyInput)
+  @Query((type) => CategoryOutput)
+  category(
+    @Args('input') categotyInput: CategoryInput,
+  ): Promise<CategoryOutput> {
+    return this.restaurantService.findCategotyBySlug(categotyInput);
   }
-
 }

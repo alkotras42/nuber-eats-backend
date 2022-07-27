@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { EditProfileInput } from 'src/users/dtos/edit-profile.dto';
 import { User } from 'src/users/entities/user.entity';
-import { Repository } from 'typeorm';
+import { Like, Raw, Repository } from 'typeorm';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 import {
@@ -19,6 +19,10 @@ import {
 } from './dtos/edit-restaurant.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
+import {
+  SearchRestaurantInput,
+  SearchRestaurantOutput,
+} from './dtos/search-restaurant.dto';
 import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurants.entity';
 import { CategoryRepository } from './repositories/categoty.repository';
@@ -201,24 +205,56 @@ export class RestaurantService {
     }
   }
 
-  async findRestaurantById({restaurantId}: RestaurantInput): Promise<RestaurantOutput> {
-    try{
-      const restaurant = await this.restaurants.findOne(restaurantId)
-      if(!restaurant) {
+  async findRestaurantById({
+    restaurantId,
+  }: RestaurantInput): Promise<RestaurantOutput> {
+    try {
+      const restaurant = await this.restaurants.findOne(restaurantId);
+      if (!restaurant) {
         return {
           ok: false,
-          error: 'Restaurant not found'
-        }
+          error: 'Restaurant not found',
+        };
       }
       return {
         ok: true,
-        restaurant
-      }
-    }catch (e){
+        restaurant,
+      };
+    } catch (e) {
       return {
         ok: false,
-        error: e.message
+        error: e.message,
+      };
+    }
+  }
+
+  async searchRestaurantByName({
+    query,
+    page,
+  }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
+    try {
+      const [restaurants, totalReslults] = await this.restaurants.findAndCount({
+        where: {
+          // SQL direct search
+          name: Raw(name => `${name} ILIKE '%${query}%'`),
+        },
+      });
+      if (!restaurants.length) {
+        return {
+          ok: false,
+          error: 'Restaurants not found',
+        };
       }
+      return {
+        ok: true,
+        restaurants,
+        totalPages: Math.ceil(totalReslults / 25),
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: e.message,
+      };
     }
   }
 }

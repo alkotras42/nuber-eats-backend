@@ -13,6 +13,7 @@ import { EditProfileInput } from 'src/users/dtos/edit-profile.dto';
 import { User, UserRole } from 'src/users/entities/user.entity';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
+import { CreateDishInput, CreateDishOutput } from './dtos/create-dish.dto';
 import {
   createRestaurantInput,
   CreateRestaurantOutput,
@@ -27,8 +28,12 @@ import {
 } from './dtos/edit-restaurant.dto';
 import { RestaurantInput, RestaurantOutput } from './dtos/restaurant.dto';
 import { RestaurantsInput, RestaurantsOutput } from './dtos/restaurants.dto';
-import { SearchRestaurantInput, SearchRestaurantOutput } from './dtos/search-restaurant.dto';
+import {
+  SearchRestaurantInput,
+  SearchRestaurantOutput,
+} from './dtos/search-restaurant.dto';
 import { Category } from './entities/category.entity';
+import { Dish } from './entities/dish.entity';
 import { Restaurant } from './entities/restaurants.entity';
 import { RestaurantService } from './restaurants.service';
 
@@ -76,14 +81,18 @@ export class RestaurantsResolver {
     return this.restaurantService.allRestaurants(restaurantsInput);
   }
 
-  @Query(returns => RestaurantOutput)
-  restaurant(@Args('input') restaurantInput: RestaurantInput): Promise<RestaurantOutput> {
-    return this.restaurantService.findRestaurantById(restaurantInput)
+  @Query((returns) => RestaurantOutput)
+  restaurant(
+    @Args('input') restaurantInput: RestaurantInput,
+  ): Promise<RestaurantOutput> {
+    return this.restaurantService.findRestaurantById(restaurantInput);
   }
 
-  @Query(returns => SearchRestaurantOutput)
-  searchRestaurant(@Args('input') searchRestaurantInput: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
-    return this.restaurantService.searchRestaurantByName(searchRestaurantInput)
+  @Query((returns) => SearchRestaurantOutput)
+  searchRestaurant(
+    @Args('input') searchRestaurantInput: SearchRestaurantInput,
+  ): Promise<SearchRestaurantOutput> {
+    return this.restaurantService.searchRestaurantByName(searchRestaurantInput);
   }
 }
 
@@ -106,5 +115,19 @@ export class CategoryResolver {
     @Args('input') categotyInput: CategoryInput,
   ): Promise<CategoryOutput> {
     return this.restaurantService.findCategotyBySlug(categotyInput);
+  }
+}
+
+@Resolver((of) => Dish)
+export class DishResolver {
+  constructor(private readonly restaurantService: RestaurantService) {}
+
+  @Mutation((type) => CreateDishOutput)
+  @Role(['Owner'])
+  createDish(
+    @AuthUser() owner: User,
+    @Args('input') createDishInput: CreateDishInput,
+  ): Promise<CreateDishOutput> {
+    return this.restaurantService.createDish(owner, createDishInput);
   }
 }

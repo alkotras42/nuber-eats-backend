@@ -42,3 +42,9 @@ The Backend of Nuber Eats Clone
 - Create dish
 - Edit dish
 - Delete dish
+
+### Orders CRUD
+
+- Orders Subsription (Owner, Customer, Delivery)
+
+### Payments

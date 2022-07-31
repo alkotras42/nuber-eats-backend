@@ -28,6 +28,9 @@ import { Category } from './entities/category.entity';
 import { Restaurant } from './entities/restaurants.entity';
 import { CategoryRepository } from './repositories/categoty.repository';
 import { Dish } from './entities/dish.entity';
+import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
+import { throws } from 'assert';
+import { EditDishInput, EditDishOutput } from './dtos/edit-dish.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -288,6 +291,80 @@ export class RestaurantService {
       const newDish = await this.dish.save(
         this.dish.create({ ...createDishInput, restaurant }),
       );
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: e.message,
+      };
+    }
+  }
+
+  async editDish(
+    owner: User,
+    editDishInput: EditDishInput,
+  ): Promise<EditDishOutput> {
+    try {
+      const dish = await this.dish.findOne(editDishInput.dishId, {
+        relations: ['restaurant'],
+      });
+      if (!dish) {
+        return {
+          ok: false,
+          error: 'Dish not found',
+        };
+      }
+      if (owner.id !== dish.restaurant.ownerId) {
+        return {
+          ok: false,
+          error: 'You not the owner of that restaurant',
+        };
+      }
+      await this.dish.save([
+        {
+          id: editDishInput.dishId,
+          ...editDishInput,
+        },
+      ]);
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: e.message,
+      };
+    }
+  }
+
+  async deleteDish(
+    owner: User,
+    { id }: DeleteDishInput,
+  ): Promise<DeleteDishOutput> {
+    try {
+      const dish = await this.dish.findOne(id, { relations: ['restaurant'] });
+      if (!dish) {
+        return {
+          ok: false,
+          error: 'Dish not found',
+        };
+      }
+      const restaurant = await this.restaurants.findOne(dish.restaurantId);
+      if (!restaurant) {
+        return {
+          ok: false,
+          error: 'Restaurant not found',
+        };
+      }
+      if (owner.id !== restaurant.ownerId) {
+        return {
+          ok: false,
+          error: 'You not the owner of that restaurant',
+        };
+      }
+      await this.dish.delete(id);
       return {
         ok: true,
       };

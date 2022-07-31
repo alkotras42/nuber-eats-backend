@@ -21,6 +21,8 @@ import { Restaurant } from './restaurants/entities/restaurants.entity';
 import { Category } from './restaurants/entities/category.entity';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { Dish } from './restaurants/entities/dish.entity';
+import { OrdersModule } from './orders/orders.module';
+import { Order } from './orders/entities/order.entity';
 
 @Module({
   imports: [
@@ -50,7 +52,7 @@ import { Dish } from './restaurants/entities/dish.entity';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: true,
-      entities: [User, Verification, Restaurant, Category, Dish],
+      entities: [User, Verification, Restaurant, Category, Dish, Order],
     }),
     GraphQLModule.forRoot({
       driver: ApolloDriver,
@@ -66,6 +68,7 @@ import { Dish } from './restaurants/entities/dish.entity';
       domain: process.env.MAILGUN_DOMAIN,
       fromEmail: process.env.MAILGUN_FROM_MAIL,
     }),
+    OrdersModule,
   ],
   controllers: [],
   providers: [],

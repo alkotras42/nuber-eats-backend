@@ -1,6 +1,7 @@
 import { Field, ID, InputType, ObjectType } from '@nestjs/graphql';
 import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entities/core.entity';
+import { Order } from 'src/orders/entities/order.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
@@ -50,4 +51,8 @@ export class Restaurant extends CoreEntity {
   @Field((type) => [Dish], { nullable: true })
   @OneToMany((type) => Dish, (dish) => dish.restaurant)
   menu: Dish[];
+
+  @Field((type) => [Order])
+  @OneToMany((type) => Order, (order) => order.restaurant)
+  orders: Order[];
 }

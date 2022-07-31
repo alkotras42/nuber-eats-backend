@@ -17,6 +17,16 @@ import {
 } from 'typeorm';
 import { Restaurant } from './restaurants.entity';
 
+@InputType('DishChoiceInputType', { isAbstract: true })
+@ObjectType()
+class DishChoice {
+  @Field((type) => String)
+  name: string;
+
+  @Field((type) => Number, { nullable: true })
+  extra?: number;
+}
+
 @InputType('DishOptionInputType', { isAbstract: true })
 @ObjectType()
 class DishOption {
@@ -26,8 +36,8 @@ class DishOption {
   @Field((type) => Number, { nullable: true })
   extra?: number;
 
-  @Field((type) => [String], { nullable: true })
-  choices?: string[];
+  @Field((type) => [DishChoice], { nullable: true })
+  choices?: DishChoice[];
 }
 
 @InputType('DishInputType', { isAbstract: true })
@@ -35,7 +45,7 @@ class DishOption {
 @Entity()
 export class Dish extends CoreEntity {
   @Field((is) => String)
-  @Length(5, 10)
+  @Length(5, 20)
   @IsString()
   @Column({ unique: true })
   name: string;
